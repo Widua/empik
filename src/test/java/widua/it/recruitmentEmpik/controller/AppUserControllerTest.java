@@ -2,6 +2,7 @@ package widua.it.recruitmentEmpik.controller;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -13,11 +14,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import widua.it.recruitmentEmpik.models.GithubUserDTO;
+import widua.it.recruitmentEmpik.models.RequestCountEntity;
+import widua.it.recruitmentEmpik.repository.RequestCountRepository;
 import widua.it.recruitmentEmpik.service.GithubUserClient;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -35,8 +40,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AppUserControllerTest {
 
     private final MockMvc mockMvc;
+
     @MockBean
     GithubUserClient githubClient;
+
+    @MockBean
+    RequestCountRepository requestRepository;
     @Autowired
     AppUserControllerTest(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
@@ -63,6 +72,7 @@ class AppUserControllerTest {
                         status().isOk(),
                         jsonPath("$.calculations").value(18)
                 );
+        verify(requestRepository).save(new RequestCountEntity(existingUserLogin,1));
     }
 
     @Test
@@ -77,6 +87,7 @@ class AppUserControllerTest {
                 .andExpect(
                         status().isNotFound()
                 );
+        verify(requestRepository).save(new RequestCountEntity(notExistingUserLogin,1));
     }
 
 }
