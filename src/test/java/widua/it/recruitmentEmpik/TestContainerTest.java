@@ -1,5 +1,8 @@
 package widua.it.recruitmentEmpik;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -7,8 +10,11 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @Testcontainers
-public abstract class IntegrationTest {
+@SpringBootTest
+public abstract class TestContainerTest {
 
 	@Container
 	static PostgreSQLContainer postgresql = new PostgreSQLContainer(DockerImageName.parse("postgres:latest"))
@@ -17,11 +23,16 @@ public abstract class IntegrationTest {
 			.withPassword("password");
 
 	@DynamicPropertySource
-	static void redisPropertySet(DynamicPropertyRegistry registry) {
+	static void postgresPropertySet(DynamicPropertyRegistry registry) {
 		postgresql.start();
 		registry.add("spring.datasource.port", postgresql::getFirstMappedPort);
 		registry.add("spring.datasource.host", postgresql::getHost);
 		registry.add("spring.datasource.url",postgresql::getJdbcUrl);
+	}
+
+	@Test
+	void test() {
+		assertTrue(postgresql.isRunning());
 	}
 
 }
