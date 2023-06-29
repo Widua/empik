@@ -2,7 +2,6 @@ package widua.it.recruitmentEmpik.controller;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -13,16 +12,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import widua.it.recruitmentEmpik.models.GithubUserDTO;
-import widua.it.recruitmentEmpik.models.RequestCountEntity;
+import widua.it.recruitmentEmpik.models.AppUserDTO;
+import widua.it.recruitmentEmpik.models.UserNotFoundException;
 import widua.it.recruitmentEmpik.repository.RequestCountRepository;
-import widua.it.recruitmentEmpik.service.GithubUserClient;
+import widua.it.recruitmentEmpik.service.AppUserService;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -42,10 +38,11 @@ class AppUserControllerTest {
     private final MockMvc mockMvc;
 
     @MockBean
-    GithubUserClient githubClient;
+    AppUserService appUserService;
 
     @MockBean
-    RequestCountRepository requestRepository;
+    RequestCountRepository countRepository;
+
     @Autowired
     AppUserControllerTest(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
@@ -54,16 +51,16 @@ class AppUserControllerTest {
     @Test
     public void validRequestShouldReturnsValidAppUser() throws Exception {
         String existingUserLogin = "IExist";
-        GithubUserDTO existingUserDTO = new GithubUserDTO(1,
+        AppUserDTO existingUserDTO = new AppUserDTO(
+                1,
                 existingUserLogin,
                 "User that exists",
                 "user",
                 "https://google.com",
-                LocalDateTime.now(),
-                1,
-                1);
+                LocalDateTime.now().toString(),
+                18);
 
-        when(githubClient.findUser(existingUserLogin)).thenReturn(Optional.of(existingUserDTO));
+        when(appUserService.findUserByLogin(existingUserLogin)).thenReturn(existingUserDTO);
 
         mockMvc
                 .perform( get("/users/"+existingUserLogin) )
@@ -72,14 +69,13 @@ class AppUserControllerTest {
                         status().isOk(),
                         jsonPath("$.calculations").value(18)
                 );
-        verify(requestRepository).save(new RequestCountEntity(existingUserLogin,1));
     }
 
     @Test
     public void userThatDoesntExistReturnsNotFound() throws Exception{
         String notExistingUserLogin = "ImNotReal";
 
-        when(githubClient.findUser(notExistingUserLogin)).thenReturn(Optional.empty());
+        when(appUserService.findUserByLogin(notExistingUserLogin)).thenThrow(UserNotFoundException.class);
 
         mockMvc
                 .perform( get("/users/"+notExistingUserLogin) )
@@ -87,7 +83,5 @@ class AppUserControllerTest {
                 .andExpect(
                         status().isNotFound()
                 );
-        verify(requestRepository).save(new RequestCountEntity(notExistingUserLogin,1));
     }
-
 }

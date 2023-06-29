@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import widua.it.recruitmentEmpik.models.RequestCountEntity;
 
 @Repository
@@ -13,7 +12,6 @@ public interface RequestCountRepository extends CrudRepository<RequestCountEntit
 
     @Query(value="UPDATE RequestCountEntity rs SET rs.requestCount = rs.requestCount + 1 WHERE rs.login = :login")
     @Modifying
-    @Transactional
      public void incrementRequestCount(@Param("login") String login);
 
 

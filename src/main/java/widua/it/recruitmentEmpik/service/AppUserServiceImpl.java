@@ -1,6 +1,6 @@
 package widua.it.recruitmentEmpik.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import widua.it.recruitmentEmpik.mapper.GithubUserMapper;
 import widua.it.recruitmentEmpik.models.AppUserDTO;
@@ -8,8 +8,9 @@ import widua.it.recruitmentEmpik.models.GithubUserDTO;
 import widua.it.recruitmentEmpik.models.UserNotFoundException;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AppUserServiceImpl implements AppUserService{
+
     private final GithubUserClient githubUserClient;
     private final GithubUserMapper mapper;
     private final RequestCountingService countingService;
